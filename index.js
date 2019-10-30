@@ -7,19 +7,12 @@ function createOctokit() {
   });
 }
 
-async function Bytes(octokit, owner, repo) {
-  // Get the most recent commit
-  const commit = await octokit.repos.listCommits({
-    owner,
-    repo,
-    per_page: 1
-  });
-
+async function BytesForSha(octokit, owner, repo, sha) {
   // Get the file tree for that commit
   const tree = await octokit.git.getTree({
     owner,
     repo,
-    tree_sha: commit.data[0].sha,
+    tree_sha: sha,
     recursive: 1
   });
 
@@ -36,6 +29,17 @@ async function Bytes(octokit, owner, repo) {
 
   // return the total
   return projectSize;
+}
+
+async function Bytes(octokit, owner, repo) {
+  // Get the most recent commit
+  const commit = await octokit.repos.listCommits({
+    owner,
+    repo,
+    per_page: 1
+  });
+
+  return await BytesForSha(octokit, owner, repo, commit.data[0].sha);
 }
 
 async function Pretty(octokit, owner, repo) {
@@ -58,6 +62,12 @@ async function GetBytesWithKit(octokit, owner, repo) {
   return await Bytes(octokit, owner, repo);
 }
 
+async function GetPrettyBytesWithKitSha(octokit, owner, repo, sha) {
+  return await pretty(
+    await GetPrettyBytesWithKitSha(octokit, owner, repo, sha)
+  );
+}
+
 module.exports = {
   GetBytes,
   GetPrettyBytes
@@ -65,5 +75,7 @@ module.exports = {
 
 module.exports.withKit = {
   GetPrettyBytes: GetPrettyBytesWithKit,
-  GetBytes: GetBytesWithKit
+  GetBytes: GetBytesWithKit,
+  GetBytesFromSha: BytesForSha,
+  GetPrettyBytesFromSha: GetPrettyBytesWithKitSha
 };
