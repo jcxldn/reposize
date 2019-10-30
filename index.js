@@ -63,9 +63,7 @@ async function GetBytesWithKit(octokit, owner, repo) {
 }
 
 async function GetPrettyBytesWithKitSha(octokit, owner, repo, sha) {
-  return await pretty(
-    await GetPrettyBytesWithKitSha(octokit, owner, repo, sha)
-  );
+  return await pretty(await BytesForSha(octokit, owner, repo, sha));
 }
 
 module.exports = {
